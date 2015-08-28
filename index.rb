@@ -69,16 +69,31 @@ tr_list.each do |tr|
 
 	#puts "scored_ratio - " + scored_ratio.to_s + " " + "conceded_ratio - " + conceded_ratio.to_s
 
-    team_ratio_hash[current_team] = {team: current_team, scored_ratio: scored_ratio, conceded_ratio: conceded_ratio}
+    team_ratio_hash[current_team] = { 
+    	                             team: current_team, 
+    	                             scored_ratio: scored_ratio, 
+    	                             conceded_ratio: conceded_ratio,
+    	                             home_goals_scored: home_goals_scored,
+    	                             guest_goals_scored: guest_goals_scored,
+    	                             home_goals_conceded: home_goals_conceded,
+    	                             guest_goals_conceded: guest_goals_conceded
+    	                            }
 end 
+
+temp_array = []
 
 tr_list.each do |tr|
 	next_match = tr.at_css(".matches-5 a")["title"]
-
-    puts "\n" + "next match" + "\n"
-
+	
+    next if !next_match.include?("Следующий")
+    
     next_match.gsub!(/\[.+\]/, "")    
     next_match.strip! 
+
+    next if temp_array.include? next_match
+    temp_array << next_match
+    
+    match_date = next_match.match(/\d{2}.\d{2}.\d{4}/).to_s
 
     index_dash        = next_match.index(' - ')
 	index_first_digit = next_match.index(/\d{2}.\d{2}.\d{4}/)     
@@ -98,13 +113,49 @@ tr_list.each do |tr|
 	match_ratio = (first_team_scored_second_team_conceded_ratio + 
 		           first_team_conceded_second_team_scored_ratio)/2 
 
-	puts next_match
+	#puts next_match
 
-	puts match_ratio.to_s + 
+	puts "\n" +
+	     match_date +
+	     " " +
+	     first_team + 
+	     " - " +
+	     second_team +
+	     "\n" +
+	     sprintf("%.2f", match_ratio) + 
+	     " [" + 
+	     sprintf("%.2f", first_team_scored_second_team_conceded_ratio) + 
 	     " " + 
-	     first_team_scored_second_team_conceded_ratio.to_s + 
-	     " " + 
-	     first_team_conceded_second_team_scored_ratio.to_s 
+	     sprintf("%.2f", first_team_conceded_second_team_scored_ratio) +
+	     "] (s" +
+	     sprintf("%.2f", team_ratio_hash[first_team][:scored_ratio]) +
+	     " c" +
+	     sprintf("%.2f", team_ratio_hash[first_team][:conceded_ratio]) +
+	     " - s" +
+	     sprintf("%.2f", team_ratio_hash[second_team][:scored_ratio]) +
+	     " c" +
+	     sprintf("%.2f", team_ratio_hash[second_team][:conceded_ratio]) +
+	     ") (" +
+	     "s: " +
+         team_ratio_hash[first_team][:home_goals_scored].to_s +
+         " " +
+         team_ratio_hash[first_team][:guest_goals_scored].to_s +
+         " c: " +
+         team_ratio_hash[first_team][:home_goals_conceded].to_s +
+         " " +
+         team_ratio_hash[first_team][:guest_goals_conceded].to_s +
+         " - s: " +
+         team_ratio_hash[second_team][:home_goals_scored].to_s +
+         " " +
+         team_ratio_hash[second_team][:guest_goals_scored].to_s +
+         " c: " +
+         team_ratio_hash[second_team][:home_goals_conceded].to_s +
+         " " +
+         team_ratio_hash[second_team][:guest_goals_conceded].to_s +
+         ")"
+
+
+
 end 
 
 driver.quit
